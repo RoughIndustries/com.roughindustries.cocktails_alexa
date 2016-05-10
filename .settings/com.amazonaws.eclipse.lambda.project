@@ -1,0 +1,5 @@
+#Lambda Function Project Metadata
+#Tue Apr 26 11:28:58 CEST 2016
+lastDeploymentFunctionName=CommonwealthCocktailFunction
+lastDeploymentBucketName=commonwealthcocktailbucket
+lastDeploymentEndpoint=https\://lambda.us-east-1.amazonaws.com/
