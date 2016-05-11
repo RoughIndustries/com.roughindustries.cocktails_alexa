@@ -65,9 +65,6 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		Ingredient ingredient = new Ingredient("bourbon whiskey");
 		RecipeStep recipeStep = new RecipeStep(ingredient, 0, 2, "ounces");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("bourbon whiskey");
-		recipeStep = new RecipeStep(ingredient, 0, 2, "ounces");
-		recipeSteps.add(recipeStep);
 		ingredient = new Ingredient("lemon juice");
 		recipeStep = new RecipeStep(ingredient, 1, 1, "ounce");
 		recipeSteps.add(recipeStep);
@@ -248,7 +245,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 					RecipeStep recipeStep = recipeSteps_iter.next();
 					if (recipeStep.ordinal == ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX)))
 									.intValue()) {
-						speechOutput.append(recipeStep.ingredeint.name);
+						speechOutput.append(recipeStep.ingredient.name);
 						int index = ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
 						index++;
 						session.setAttribute(SESSION_CURRENT_ING_INDEX, new Integer(index));
