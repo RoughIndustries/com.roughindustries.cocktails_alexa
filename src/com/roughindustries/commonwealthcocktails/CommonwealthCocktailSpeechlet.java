@@ -13,6 +13,7 @@ import com.amazon.speech.speechlet.SessionStartedRequest;
 import com.amazon.speech.speechlet.Speechlet;
 import com.amazon.speech.speechlet.SpeechletException;
 import com.amazon.speech.speechlet.SpeechletResponse;
+import com.amazon.speech.ui.OutputSpeech;
 import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SimpleCard;
@@ -26,7 +27,18 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	private static final Logger log = LoggerFactory.getLogger(CommonwealthCocktailSpeechlet.class);
 
 	private static final String SLOT_NAME = "name";
+	
+    /**
+     * The key to find the current index from the session attributes.
+     */
+    private static final String SESSION_CURRENT_INDEX = "current";
 
+    
+    /**
+     * The key to find the current category from the session attributes.
+     */
+    private static final String SESSION_CURRENT_CATEGORY = "category";
+    
 	@Override
 	public void onSessionStarted(final SessionStartedRequest request, final Session session) throws SpeechletException {
 		log.info("onSessionStarted requestId={}, sessionId={}", request.getRequestId(), session.getSessionId());
@@ -46,9 +58,27 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		Intent intent = request.getIntent();
 		String intentName = (intent != null) ? intent.getName() : null;
 
-		if ("CocktailIntent".equals(intentName)) {
-			return getCocktailResponse(intent, session);
-		} else if ("AMAZON.HelpIntent".equals(intentName)) {
+		if ("CocktailRecipeIntent".equals(intentName)) {
+			return getCocktailRecipeResponse(intent, session);
+		} else if ("CocktailIngredientIntent".equals(intentName)) {
+			return getCocktailIngredientResponse(intent, session);
+		} else if ("HandlePositive".equals(intentName)) {
+			if (session.getAttributes().containsKey(SESSION_CURRENT_CATEGORY)) {
+				if ("CocktailRecipeIntent".equals(session.getAttribute(SESSION_CURRENT_CATEGORY))) {
+					return getCocktailRecipeResponse(intent, session);
+				} else if ("CocktailIngredientIntent".equals(session.getAttribute(SESSION_CURRENT_CATEGORY))) {
+					return getCocktailIngredientResponse(intent, session);
+				} else {
+					throw new SpeechletException("Invalid Intent"); 
+				}
+			} else {
+				throw new SpeechletException("Invalid Intent");
+			}
+        } else if ("HandleNegative".equals(intentName)) {
+            PlainTextOutputSpeech output = new PlainTextOutputSpeech();
+            output.setText("");
+            return SpeechletResponse.newTellResponse(output);
+        } else if ("AMAZON.HelpIntent".equals(intentName)) {
 			return getHelpResponse();
 		} else {
 			throw new SpeechletException("Invalid Intent");
@@ -86,27 +116,93 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	}
 
 	/**
-	 * Creates a {@code SpeechletResponse} for the cocktail intent.
+	 * Creates a {@code SpeechletResponse} for the cocktail recipe intent.
 	 *
 	 * @return SpeechletResponse spoken and visual response for the given intent
 	 */
-	private SpeechletResponse getCocktailResponse(Intent intent, Session session) {
+	private SpeechletResponse getCocktailRecipeResponse(Intent intent, Session session) {
 		Slot nameSlot = intent.getSlot(SLOT_NAME);
 		String name = nameSlot.getValue().toLowerCase();
 		String speechOutput = "We don't have a recipe for " + name;
 		if (name.contains("whiskey sour")) {
-			speechOutput = "to make a "+name+"<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
-		} else if(name.contains("margarita on the rocks")){
-			speechOutput = " to make a "+name+"<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
+			speechOutput = "to make a " + name
+					+ "<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
+		} else if (name.contains("margarita on the rocks")) {
+			speechOutput = " to make a " + name
+					+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
 		}
 
 		// Create the plain text output
-        SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
-        outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
+		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
+		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
 
-        return SpeechletResponse.newTellResponse(outputSpeech);
+		return SpeechletResponse.newTellResponse(outputSpeech);
 	}
 
+	/**
+	 * Creates a {@code SpeechletResponse} for the cocktail ingredient intent.
+	 *
+	 * @return SpeechletResponse spoken and visual response for the given intent
+	 */
+	private SpeechletResponse getCocktailIngredientResponse(Intent intent, Session session) {
+		Slot nameSlot = intent.getSlot(SLOT_NAME);
+		String name = nameSlot.getValue().toLowerCase();
+
+		String repromptText = "";
+
+		// Check if we are in a session, and if so then reprompt for yes or no
+		if (session.getAttributes().containsKey(SESSION_CURRENT_INDEX)) {
+			String speechOutput = "Would you like to hear more?";
+			repromptText = "Would you like to hear more ingredients? Please say yes or no.";
+			return newAskResponse(speechOutput, false, repromptText, false);
+		}
+		
+		// Configure the card and speech output.
+        String cardTitle = "Ingredients for " + name;
+        StringBuilder cardOutput = new StringBuilder();
+        cardOutput.append("The ingredients for ").append(name).append(" are: ");
+		StringBuilder speechOutput  = new StringBuilder();
+        speechOutput.append("Here are the ingredients for ").append(name).append(". ");
+        //call this method again when we come back into this session
+        session.setAttribute(SESSION_CURRENT_CATEGORY, "CocktailIngredientIntent");
+
+		if (name.contains("whiskey sour")) {
+            speechOutput.append(" Would you like to hear the next?");
+            repromptText = "Would you like to hear the next? Please say yes or no.";
+
+            SimpleCard card = new SimpleCard();
+            card.setContent(cardOutput.toString());
+            card.setTitle(cardTitle);
+
+            SpeechletResponse response = newAskResponse("<speak>" + speechOutput.toString() + "</speak>", true,
+                    repromptText, false);
+            response.setCard(card);
+		} else if (name.contains("margarita on the rocks")) {
+            speechOutput.append(" Would you like to hear the next?");
+            repromptText = "Would you like to hear the next? Please say yes or no.";
+
+            SimpleCard card = new SimpleCard();
+            card.setContent(cardOutput.toString());
+            card.setTitle(cardTitle);
+
+            SpeechletResponse response = newAskResponse("<speak>" + speechOutput.toString() + "</speak>", true,
+                    repromptText, false);
+            response.setCard(card);
+		} else {
+            // There were no items returned for the specified item.
+            SsmlOutputSpeech output = new SsmlOutputSpeech();
+            output.setSsml("<speak>I'm sorry, we do not have a recipe for " + name
+                    + " at this time. Please try again later. Goodbye.</speak>");
+            return SpeechletResponse.newTellResponse(output);
+		}
+
+		// Create the plain text output
+		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
+		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
+
+		return SpeechletResponse.newTellResponse(outputSpeech);
+	}
+	
 	/**
 	 * Creates a {@code SpeechletResponse} for the help intent.
 	 *
@@ -129,5 +225,42 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		reprompt.setOutputSpeech(speech);
 
 		return SpeechletResponse.newAskResponse(speech, reprompt, card);
+	}
+
+	/**
+	 * Wrapper for creating the Ask response from the input strings.
+	 * 
+	 * @param stringOutput
+	 *            the output to be spoken
+	 * @param isOutputSsml
+	 *            whether the output text is of type SSML
+	 * @param repromptText
+	 *            the reprompt for if the user doesn't reply or is
+	 *            misunderstood.
+	 * @param isRepromptSsml
+	 *            whether the reprompt text is of type SSML
+	 * @return SpeechletResponse the speechlet response
+	 */
+	private SpeechletResponse newAskResponse(String stringOutput, boolean isOutputSsml, String repromptText,
+			boolean isRepromptSsml) {
+		OutputSpeech outputSpeech, repromptOutputSpeech;
+		if (isOutputSsml) {
+			outputSpeech = new SsmlOutputSpeech();
+			((SsmlOutputSpeech) outputSpeech).setSsml(stringOutput);
+		} else {
+			outputSpeech = new PlainTextOutputSpeech();
+			((PlainTextOutputSpeech) outputSpeech).setText(stringOutput);
+		}
+
+		if (isRepromptSsml) {
+			repromptOutputSpeech = new SsmlOutputSpeech();
+			((SsmlOutputSpeech) repromptOutputSpeech).setSsml(repromptText);
+		} else {
+			repromptOutputSpeech = new PlainTextOutputSpeech();
+			((PlainTextOutputSpeech) repromptOutputSpeech).setText(repromptText);
+		}
+		Reprompt reprompt = new Reprompt();
+		reprompt.setOutputSpeech(repromptOutputSpeech);
+		return SpeechletResponse.newAskResponse(outputSpeech, reprompt);
 	}
 }
