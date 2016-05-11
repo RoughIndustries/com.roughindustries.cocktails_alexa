@@ -1,5 +1,8 @@
 package com.roughindustries.commonwealthcocktails;
 
+import java.util.Iterator;
+import java.util.Vector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +21,9 @@ import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SimpleCard;
 import com.amazon.speech.ui.SsmlOutputSpeech;
+import com.roughindustries.commonwealthcocktails.model.Cocktail;
+import com.roughindustries.commonwealthcocktails.model.Ingredient;
+import com.roughindustries.commonwealthcocktails.model.RecipeStep;
 
 /**
  * This sample shows how to create a simple speechlet for handling speechlet
@@ -31,13 +37,42 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
     /**
      * The key to find the current index from the session attributes.
      */
-    private static final String SESSION_CURRENT_INDEX = "current";
+    private static final String SESSION_CURRENT_ING_INDEX = "ing_index";
 
     
     /**
      * The key to find the current category from the session attributes.
      */
     private static final String SESSION_CURRENT_CATEGORY = "category";
+    
+    /**
+     * The key to find the current cocktail from the session attributes.
+     */
+    private static final String SESSION_CURRENT_COCKTAIL = "cocktail";
+    
+    private static final Vector<Cocktail> cocktails = new Vector<Cocktail>();
+    
+    private static final Vector<RecipeStep> recipeSteps = new Vector<RecipeStep>();
+    
+    static{
+    	Cocktail cocktail = new Cocktail("whiskey sour", "shake all ingredients with ice and strain into ice-filled glass", "lemon slice and cherry on stick", "old fasioned glass");
+    	cocktails.add(cocktail);
+    	Ingredient ingredient = new Ingredient("bourbon whiskey");
+    	RecipeStep recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
+    	recipeSteps.add(recipeStep);
+    	ingredient = new Ingredient("bourbon whiskey");
+    	recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
+    	recipeSteps.add(recipeStep);
+    	ingredient = new Ingredient("lemon juice");
+    	recipeStep = new RecipeStep(cocktail, ingredient, 1, 1, "ounce");
+    	recipeSteps.add(recipeStep);
+    	ingredient = new Ingredient("simple syrup");
+    	recipeStep = new RecipeStep(cocktail, ingredient, 2, .5, "ounce");
+    	recipeSteps.add(recipeStep);
+    	ingredient = new Ingredient("aromatic bitters");
+    	recipeStep = new RecipeStep(cocktail, ingredient, 3, 3, "dashes");
+    	recipeSteps.add(recipeStep);
+    }
     
 	@Override
 	public void onSessionStarted(final SessionStartedRequest request, final Session session) throws SpeechletException {
@@ -61,6 +96,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		if ("CocktailRecipeIntent".equals(intentName)) {
 			return getCocktailRecipeResponse(intent, session);
 		} else if ("CocktailIngredientIntent".equals(intentName)) {
+			session.setAttribute(SESSION_CURRENT_ING_INDEX, new Integer(0));
 			return getCocktailIngredientResponse(intent, session);
 		} else if ("HandlePositive".equals(intentName)) {
 			if (session.getAttributes().containsKey(SESSION_CURRENT_CATEGORY)) {
@@ -145,62 +181,63 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	 * @return SpeechletResponse spoken and visual response for the given intent
 	 */
 	private SpeechletResponse getCocktailIngredientResponse(Intent intent, Session session) {
-		Slot nameSlot = intent.getSlot(SLOT_NAME);
-		String name = nameSlot.getValue().toLowerCase();
-
 		String repromptText = "";
 
-		// Check if we are in a session, and if so then reprompt for yes or no
-		if (session.getAttributes().containsKey(SESSION_CURRENT_INDEX)) {
-			String speechOutput = "Would you like to hear more?";
-			repromptText = "Would you like to hear more ingredients? Please say yes or no.";
-			return newAskResponse(speechOutput, false, repromptText, false);
-		}
-		
-		// Configure the card and speech output.
+        String name = "";
+        if(session.getAttributes().containsKey((SESSION_CURRENT_COCKTAIL))){
+        	name = session.getAttribute(SESSION_CURRENT_COCKTAIL).toString();
+        } else {
+        	Slot nameSlot = intent.getSlot(SLOT_NAME);
+    		name = nameSlot.getValue().toLowerCase();
+    		session.setAttribute(SESSION_CURRENT_COCKTAIL, name);
+        }
+        
+        // Configure the card and speech output.
         String cardTitle = "Ingredients for " + name;
         StringBuilder cardOutput = new StringBuilder();
-        cardOutput.append("The ingredients for ").append(name).append(" are: ");
 		StringBuilder speechOutput  = new StringBuilder();
-        speechOutput.append("Here are the ingredients for ").append(name).append(". ");
+		if(((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0){
+	        cardOutput.append("The ingredients for ").append(name).append(" are: ");
+			speechOutput.append("Here are the ingredients for ").append(name).append(". ");
+		}
         //call this method again when we come back into this session
         session.setAttribute(SESSION_CURRENT_CATEGORY, "CocktailIngredientIntent");
-
-		if (name.contains("whiskey sour")) {
-            speechOutput.append(" Would you like to hear the next?");
-            repromptText = "Would you like to hear the next? Please say yes or no.";
-
-            SimpleCard card = new SimpleCard();
-            card.setContent(cardOutput.toString());
-            card.setTitle(cardTitle);
-
-            SpeechletResponse response = newAskResponse("<speak>" + speechOutput.toString() + "</speak>", true,
-                    repromptText, false);
-            response.setCard(card);
-		} else if (name.contains("margarita on the rocks")) {
-            speechOutput.append(" Would you like to hear the next?");
-            repromptText = "Would you like to hear the next? Please say yes or no.";
-
-            SimpleCard card = new SimpleCard();
-            card.setContent(cardOutput.toString());
-            card.setTitle(cardTitle);
-
-            SpeechletResponse response = newAskResponse("<speak>" + speechOutput.toString() + "</speak>", true,
-                    repromptText, false);
-            response.setCard(card);
-		} else {
+        
+		boolean found = false;
+		Iterator<Cocktail> cocktail_iter = cocktails.iterator();
+		while(cocktail_iter.hasNext() && !found){
+			Cocktail cocktail = cocktail_iter.next();
+			if(cocktail.name.contains(name)){
+				Iterator<RecipeStep> recipeSteps_iter = recipeSteps.iterator();
+				while(recipeSteps_iter.hasNext() && !found){
+					RecipeStep recipeStep = recipeSteps_iter.next();
+					if(recipeStep.cocktail.name.contains(cocktail.name) && recipeStep.ordinal == ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() ){
+						speechOutput.append(recipeStep.ingredeint.name);
+						int index = ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
+						index++;
+						session.setAttribute(SESSION_CURRENT_ING_INDEX, new Integer(index));
+						found = true;
+					}
+				}
+				
+			}
+		}
+		if(!found && ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0){
             // There were no items returned for the specified item.
             SsmlOutputSpeech output = new SsmlOutputSpeech();
             output.setSsml("<speak>I'm sorry, we do not have a recipe for " + name
                     + " at this time. Please try again later. Goodbye.</speak>");
             return SpeechletResponse.newTellResponse(output);
+		} else if (!found && ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() > 0) {
+			// There were no items returned for the specified item.
+            SsmlOutputSpeech output = new SsmlOutputSpeech();
+            output.setSsml("<speak>There are not more ingredients. Goodbye.</speak>");
+            return SpeechletResponse.newTellResponse(output);
+		} else {
+			speechOutput.append(" Would you like to hear more?");
+            return newAskResponse(speechOutput.toString(), true,
+                    "Would you like to hear more top sellers? Please say yes or no.", false);
 		}
-
-		// Create the plain text output
-		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
-		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
-
-		return SpeechletResponse.newTellResponse(outputSpeech);
 	}
 	
 	/**
