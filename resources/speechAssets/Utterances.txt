@@ -1,0 +1,20 @@
+CocktailRecipeIntent recipe for a {name}
+CocktailRecipeIntent recipe for an {name}
+CocktailRecipeIntent recipe for {name}
+
+CocktailIngredientIntent ingredients for a {name}
+CocktailIngredientIntent ingredients for an {name}
+CocktailIngredientIntent ingredients for {name}
+
+HandlePositive yes
+HandlePositive yep
+HandlePositive yeah
+HandlePositive sure
+HandlePositive yes please
+HandlePositive affirmative
+
+HandleNegative no
+HandleNegative nope
+HandleNegative no thank you
+HandleNegative not now
+HandleNegative negative

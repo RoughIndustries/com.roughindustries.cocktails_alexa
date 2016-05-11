@@ -1,0 +1,25 @@
+{
+  "intents": [
+    {
+      "intent": "CocktailRecipeIntent",
+       "slots": [
+        {
+          "name": "name",
+          "type": "COCKTAIL_NAMES"
+        }
+      ]
+    },
+    {
+       "intent": "CocktailIngredientIntent",
+       "slots": [
+        {
+          "name": "name",
+          "type": "COCKTAIL_NAMES"
+        }
+      ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-CocktailIntent say hello
-CocktailIntent say hello world
-CocktailIntent hello
-CocktailIntent say hi
-CocktailIntent say hi world
-CocktailIntent hi
-CocktailIntent how are you
