@@ -1,6 +1,9 @@
 package com.roughindustries.commonwealthcocktails;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.Vector;
 
 import org.slf4j.Logger;
@@ -33,47 +36,48 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	private static final Logger log = LoggerFactory.getLogger(CommonwealthCocktailSpeechlet.class);
 
 	private static final String SLOT_NAME = "name";
-	
-    /**
-     * The key to find the current index from the session attributes.
-     */
-    private static final String SESSION_CURRENT_ING_INDEX = "ing_index";
 
-    
-    /**
-     * The key to find the current category from the session attributes.
-     */
-    private static final String SESSION_CURRENT_CATEGORY = "category";
-    
-    /**
-     * The key to find the current cocktail from the session attributes.
-     */
-    private static final String SESSION_CURRENT_COCKTAIL = "cocktail";
-    
-    private static final Vector<Cocktail> cocktails = new Vector<Cocktail>();
-    
-    private static final Vector<RecipeStep> recipeSteps = new Vector<RecipeStep>();
-    
-    static{
-    	Cocktail cocktail = new Cocktail("whiskey sour", "shake all ingredients with ice and strain into ice-filled glass", "lemon slice and cherry on stick", "old fasioned glass");
-    	cocktails.add(cocktail);
-    	Ingredient ingredient = new Ingredient("bourbon whiskey");
-    	RecipeStep recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
-    	recipeSteps.add(recipeStep);
-    	ingredient = new Ingredient("bourbon whiskey");
-    	recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
-    	recipeSteps.add(recipeStep);
-    	ingredient = new Ingredient("lemon juice");
-    	recipeStep = new RecipeStep(cocktail, ingredient, 1, 1, "ounce");
-    	recipeSteps.add(recipeStep);
-    	ingredient = new Ingredient("simple syrup");
-    	recipeStep = new RecipeStep(cocktail, ingredient, 2, .5, "ounce");
-    	recipeSteps.add(recipeStep);
-    	ingredient = new Ingredient("aromatic bitters");
-    	recipeStep = new RecipeStep(cocktail, ingredient, 3, 3, "dashes");
-    	recipeSteps.add(recipeStep);
-    }
-    
+	/**
+	 * The key to find the current index from the session attributes.
+	 */
+	private static final String SESSION_CURRENT_ING_INDEX = "ing_index";
+
+	/**
+	 * The key to find the current category from the session attributes.
+	 */
+	private static final String SESSION_CURRENT_CATEGORY = "category";
+
+	/**
+	 * The key to find the current cocktail from the session attributes.
+	 */
+	private static final String SESSION_CURRENT_COCKTAIL = "cocktail";
+
+	private static final Vector<Cocktail> cocktails = new Vector<Cocktail>();
+
+	private static final Vector<RecipeStep> recipeSteps = new Vector<RecipeStep>();
+
+	static {
+		Cocktail cocktail = new Cocktail("whiskey sour",
+				"shake all ingredients with ice and strain into ice-filled glass", "lemon slice and cherry on stick",
+				"old fasioned glass");
+		cocktails.add(cocktail);
+		Ingredient ingredient = new Ingredient("bourbon whiskey");
+		RecipeStep recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("bourbon whiskey");
+		recipeStep = new RecipeStep(cocktail, ingredient, 0, 2, "ounces");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("lemon juice");
+		recipeStep = new RecipeStep(cocktail, ingredient, 1, 1, "ounce");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("simple syrup");
+		recipeStep = new RecipeStep(cocktail, ingredient, 2, .5, "ounce");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("aromatic bitters");
+		recipeStep = new RecipeStep(cocktail, ingredient, 3, 3, "dashes");
+		recipeSteps.add(recipeStep);
+	}
+
 	@Override
 	public void onSessionStarted(final SessionStartedRequest request, final Session session) throws SpeechletException {
 		log.info("onSessionStarted requestId={}, sessionId={}", request.getRequestId(), session.getSessionId());
@@ -105,16 +109,16 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 				} else if ("CocktailIngredientIntent".equals(session.getAttribute(SESSION_CURRENT_CATEGORY))) {
 					return getCocktailIngredientResponse(intent, session);
 				} else {
-					throw new SpeechletException("Invalid Intent"); 
+					throw new SpeechletException("Invalid Intent");
 				}
 			} else {
 				throw new SpeechletException("Invalid Intent");
 			}
-        } else if ("HandleNegative".equals(intentName)) {
-            PlainTextOutputSpeech output = new PlainTextOutputSpeech();
-            output.setText("");
-            return SpeechletResponse.newTellResponse(output);
-        } else if ("AMAZON.HelpIntent".equals(intentName)) {
+		} else if ("HandleNegative".equals(intentName)) {
+			PlainTextOutputSpeech output = new PlainTextOutputSpeech();
+			output.setText("");
+			return SpeechletResponse.newTellResponse(output);
+		} else if ("AMAZON.HelpIntent".equals(intentName)) {
 			return getHelpResponse();
 		} else {
 			throw new SpeechletException("Invalid Intent");
@@ -160,14 +164,23 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		Slot nameSlot = intent.getSlot(SLOT_NAME);
 		String name = nameSlot.getValue().toLowerCase();
 		String speechOutput = "We don't have a recipe for " + name;
-		if (name.contains("whiskey sour")) {
-			speechOutput = "to make a " + name
-					+ "<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
-		} else if (name.contains("margarita on the rocks")) {
-			speechOutput = " to make a " + name
-					+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
-		}
 
+		try {
+			ClassLoader classLoader = getClass().getClassLoader();
+			File file = new File(classLoader.getResource("ST/recipe.st").getFile());
+			String content = new Scanner(file).useDelimiter("\\Z").next();
+
+			if (name.contains("whiskey sour")) {
+				speechOutput = "to make a " + name
+						+ "<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
+			} else if (name.contains("margarita on the rocks")) {
+				speechOutput = " to make a " + name
+						+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		// Create the plain text output
 		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
 		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
@@ -183,63 +196,65 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	private SpeechletResponse getCocktailIngredientResponse(Intent intent, Session session) {
 		String repromptText = "";
 
-        String name = "";
-        if(session.getAttributes().containsKey((SESSION_CURRENT_COCKTAIL))){
-        	name = session.getAttribute(SESSION_CURRENT_COCKTAIL).toString();
-        } else {
-        	Slot nameSlot = intent.getSlot(SLOT_NAME);
-    		name = nameSlot.getValue().toLowerCase();
-    		session.setAttribute(SESSION_CURRENT_COCKTAIL, name);
-        }
-        
-        // Configure the card and speech output.
-        String cardTitle = "Ingredients for " + name;
-        StringBuilder cardOutput = new StringBuilder();
-		StringBuilder speechOutput  = new StringBuilder();
-		if(((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0){
-	        cardOutput.append("The ingredients for ").append(name).append(" are: ");
+		String name = "";
+		if (session.getAttributes().containsKey((SESSION_CURRENT_COCKTAIL))) {
+			name = session.getAttribute(SESSION_CURRENT_COCKTAIL).toString();
+		} else {
+			Slot nameSlot = intent.getSlot(SLOT_NAME);
+			name = nameSlot.getValue().toLowerCase();
+			session.setAttribute(SESSION_CURRENT_COCKTAIL, name);
+		}
+
+		// Configure the card and speech output.
+		String cardTitle = "Ingredients for " + name;
+		StringBuilder cardOutput = new StringBuilder();
+		StringBuilder speechOutput = new StringBuilder();
+		if (((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0) {
+			cardOutput.append("The ingredients for ").append(name).append(" are: ");
 			speechOutput.append("Here are the ingredients for ").append(name).append(". ");
 		}
-        //call this method again when we come back into this session
-        session.setAttribute(SESSION_CURRENT_CATEGORY, "CocktailIngredientIntent");
-        
+		// call this method again when we come back into this session
+		session.setAttribute(SESSION_CURRENT_CATEGORY, "CocktailIngredientIntent");
+
 		boolean found = false;
 		Iterator<Cocktail> cocktail_iter = cocktails.iterator();
-		while(cocktail_iter.hasNext() && !found){
+		while (cocktail_iter.hasNext() && !found) {
 			Cocktail cocktail = cocktail_iter.next();
-			if(cocktail.name.contains(name)){
+			if (cocktail.name.contains(name)) {
 				Iterator<RecipeStep> recipeSteps_iter = recipeSteps.iterator();
-				while(recipeSteps_iter.hasNext() && !found){
+				while (recipeSteps_iter.hasNext() && !found) {
 					RecipeStep recipeStep = recipeSteps_iter.next();
-					if(recipeStep.cocktail.name.contains(cocktail.name) && recipeStep.ordinal == ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() ){
+					if (recipeStep.cocktail.name.contains(cocktail.name)
+							&& recipeStep.ordinal == ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX)))
+									.intValue()) {
 						speechOutput.append(recipeStep.ingredeint.name);
-						int index = ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
+						int index = ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
 						index++;
 						session.setAttribute(SESSION_CURRENT_ING_INDEX, new Integer(index));
 						found = true;
 					}
 				}
-				
+
 			}
 		}
-		if(!found && ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0){
-            // There were no items returned for the specified item.
-            SsmlOutputSpeech output = new SsmlOutputSpeech();
-            output.setSsml("<speak>I'm sorry, we do not have a recipe for " + name
-                    + " at this time. Please try again later. Goodbye.</speak>");
-            return SpeechletResponse.newTellResponse(output);
-		} else if (!found && ((Integer)(session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() > 0) {
+		if (!found && ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() == 0) {
 			// There were no items returned for the specified item.
-            SsmlOutputSpeech output = new SsmlOutputSpeech();
-            output.setSsml("<speak>There are not more ingredients. Goodbye.</speak>");
-            return SpeechletResponse.newTellResponse(output);
+			SsmlOutputSpeech output = new SsmlOutputSpeech();
+			output.setSsml("<speak>I'm sorry, we do not have a recipe for " + name
+					+ " at this time. Please try again later. Goodbye.</speak>");
+			return SpeechletResponse.newTellResponse(output);
+		} else if (!found && ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() > 0) {
+			// There were no items returned for the specified item.
+			SsmlOutputSpeech output = new SsmlOutputSpeech();
+			output.setSsml("<speak>There are not more ingredients. Goodbye.</speak>");
+			return SpeechletResponse.newTellResponse(output);
 		} else {
 			speechOutput.append(" Would you like to hear more?");
-            return newAskResponse(speechOutput.toString(), true,
-                    "Would you like to hear more top sellers? Please say yes or no.", false);
+			return newAskResponse(speechOutput.toString(), true,
+					"Would you like to hear more top sellers? Please say yes or no.", false);
 		}
 	}
-	
+
 	/**
 	 * Creates a {@code SpeechletResponse} for the help intent.
 	 *
