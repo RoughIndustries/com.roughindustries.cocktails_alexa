@@ -1,7 +1,14 @@
 package com.roughindustries.commonwealthcocktails;
 
+<<<<<<< HEAD
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Scanner;
+=======
 import java.util.Iterator;
 import java.util.Vector;
+>>>>>>> refs/remotes/origin/master
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,6 +163,35 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	 *
 	 * @return SpeechletResponse spoken and visual response for the given intent
 	 */
+<<<<<<< HEAD
+	protected SpeechletResponse getCocktailResponse(Intent intent, Session session) {
+		String speechOutput = "We don't have a recipe for ";
+
+		try {
+			ClassLoader classLoader = getClass().getClassLoader();
+			File file = new File(classLoader.getResource("ST/recipe.st").getFile());
+			
+			Scanner scan = new Scanner(file);
+			String content = scan.useDelimiter("\\Z").next();
+			scan.close();
+			
+			Slot nameSlot = intent.getSlot(SLOT_NAME);
+			String name = nameSlot.getValue().toLowerCase();
+			speechOutput += name;
+
+			if (name.contains("whiskey sour")) {
+				speechOutput = "to make a " + name
+						+ "<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
+			} else if (name.contains("margarita on the rocks")) {
+				speechOutput = " to make a " + name
+						+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
+			}
+
+			// Create the plain text output
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+=======
 	private SpeechletResponse getCocktailRecipeResponse(Intent intent, Session session) {
 		Slot nameSlot = intent.getSlot(SLOT_NAME);
 		String name = nameSlot.getValue().toLowerCase();
@@ -166,12 +202,18 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		} else if (name.contains("margarita on the rocks")) {
 			speechOutput = " to make a " + name
 					+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
+>>>>>>> refs/remotes/origin/master
 		}
+<<<<<<< HEAD
+		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
+		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
+=======
 
 		// Create the plain text output
 		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
 		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
 
+>>>>>>> refs/remotes/origin/master
 		return SpeechletResponse.newTellResponse(outputSpeech);
 	}
 
