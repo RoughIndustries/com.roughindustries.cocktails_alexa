@@ -1,3 +1,0 @@
-// file /speechAssets/commPhrases.stg
-recipe(cocktail) ::= "$cocktail.method$"
-ingredients(cocktail) ::= "<if(cocktail.recipe.ingredient)> = <cocktail.recipe.ingredient><endif>"

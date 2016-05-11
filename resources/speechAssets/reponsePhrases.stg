@@ -1,0 +1,2 @@
+// file /speechAssets/commPhrases.stg
+recipe(cocktail) ::= "to make a $cocktail.name$ <break strength='strong' />  ingredients<break strength='strong' /> $cocktail.recipeSteps:{recipe | $recipe.ingredient.name$}$<break strength='weak' />  garnish<break strength='medium' /> $cocktail.garnish$<break strength='strong' />  $cocktail.method$"
