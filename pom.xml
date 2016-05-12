@@ -15,6 +15,11 @@
 			<version>3.6.1</version>
 		</dependency>
 		<dependency>
+			<groupId>org.atteo</groupId>
+			<artifactId>evo-inflector</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>stringtemplate</artifactId>
 			<version>4.0.2</version>

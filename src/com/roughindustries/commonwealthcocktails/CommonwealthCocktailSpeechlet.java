@@ -63,7 +63,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	static {
 		List<RecipeStep> recipeSteps = new ArrayList<RecipeStep>();
 		Ingredient ingredient = new Ingredient("bourbon whiskey");
-		RecipeStep recipeStep = new RecipeStep(ingredient, 0, 2, "ounces");
+		RecipeStep recipeStep = new RecipeStep(ingredient, 0, 2, "ounce");
 		recipeSteps.add(recipeStep);
 		ingredient = new Ingredient("lemon juice");
 		recipeStep = new RecipeStep(ingredient, 1, 1, "ounce");
@@ -72,13 +72,35 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		recipeStep = new RecipeStep(ingredient, 2, .5, "ounce");
 		recipeSteps.add(recipeStep);
 		ingredient = new Ingredient("aromatic bitters");
-		recipeStep = new RecipeStep(ingredient, 3, 3, "dashes");
+		recipeStep = new RecipeStep(ingredient, 3, 3, "dash");
 		recipeSteps.add(recipeStep);
 		Cocktail cocktail = new Cocktail("whiskey sour",
-				"shake all ingredients with ice and strain into ice-filled glass", "lemon slice and cherry on stick",
+				"shake all ingredients with ice and strain into ice filled glass", "lemon slice and cherry on stick",
 				"old fasioned glass", recipeSteps);
 		cocktails.add(cocktail);
-
+		recipeSteps = new ArrayList<RecipeStep>();
+		ingredient = new Ingredient("tequila");
+		recipeStep = new RecipeStep(ingredient, 0, 1.5, "ounce");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("triple sec");
+		recipeStep = new RecipeStep(ingredient, 1, .75, "ounce");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("lime juice");
+		recipeStep = new RecipeStep(ingredient, 2, .75, "ounce");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("agave syrup");
+		recipeStep = new RecipeStep(ingredient, 3, 1, "spoonfull");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("salt");
+		recipeStep = new RecipeStep(ingredient, 4, .5, "pinch");
+		recipeSteps.add(recipeStep);
+		ingredient = new Ingredient("lavender bitters");
+		recipeStep = new RecipeStep(ingredient, 5, 1, "dash");
+		recipeSteps.add(recipeStep);
+		cocktail = new Cocktail("margarita on the rocks",
+				"shake all ingredients with ice and strain into ice filled glass", "salt rim optional and lime wedge",
+				"old fasioned glass", recipeSteps);
+		cocktails.add(cocktail);
 	}
 
 	@Override
@@ -259,17 +281,17 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			// There were no items returned for the specified item.
 			SsmlOutputSpeech output = new SsmlOutputSpeech();
 			output.setSsml("<speak>I'm sorry, we do not have a recipe for " + name
-					+ " at this time. Please try again later. Goodbye.</speak>");
+					+ " at this time. Please try again later, we are adding more every day.</speak>");
 			return SpeechletResponse.newTellResponse(output);
 		} else if (!found && ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue() > 0) {
 			// There were no items returned for the specified item.
 			SsmlOutputSpeech output = new SsmlOutputSpeech();
-			output.setSsml("<speak>There are not more ingredients. Goodbye.</speak>");
+			output.setSsml("<speak>There are no more ingredients.</speak>");
 			return SpeechletResponse.newTellResponse(output);
 		} else {
 			speechOutput.append(" Would you like to hear more?");
 			return newAskResponse(speechOutput.toString(), true,
-					"Would you like to hear more top sellers? Please say yes or no.", false);
+					"Would you like to hear more? Please say yes or no.", false);
 		}
 	}
 
