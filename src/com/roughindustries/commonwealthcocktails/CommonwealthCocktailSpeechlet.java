@@ -25,11 +25,13 @@ import com.amazon.speech.speechlet.SessionStartedRequest;
 import com.amazon.speech.speechlet.Speechlet;
 import com.amazon.speech.speechlet.SpeechletException;
 import com.amazon.speech.speechlet.SpeechletResponse;
+import com.amazon.speech.ui.Card;
 import com.amazon.speech.ui.OutputSpeech;
 import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SimpleCard;
 import com.amazon.speech.ui.SsmlOutputSpeech;
+import com.amazon.speech.ui.StandardCard;
 import com.roughindustries.commonwealthcocktails.model.Cocktail;
 import com.roughindustries.commonwealthcocktails.model.Ingredient;
 import com.roughindustries.commonwealthcocktails.model.RecipeStep;
@@ -62,44 +64,44 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 
 	static {
 		List<RecipeStep> recipeSteps = new ArrayList<RecipeStep>();
-		Ingredient ingredient = new Ingredient("bourbon whiskey");
+		Ingredient ingredient = new Ingredient("bourbon whiskey", "Jack Daniels Tennessee Whiskey");
 		RecipeStep recipeStep = new RecipeStep(ingredient, 0, 2, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lemon juice");
+		ingredient = new Ingredient("lemon juice", null);
 		recipeStep = new RecipeStep(ingredient, 1, 1, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("simple syrup");
+		ingredient = new Ingredient("simple syrup", null);
 		recipeStep = new RecipeStep(ingredient, 2, .5, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("aromatic bitters");
+		ingredient = new Ingredient("aromatic bitters", null);
 		recipeStep = new RecipeStep(ingredient, 3, 3, "dash");
 		recipeSteps.add(recipeStep);
-		Cocktail cocktail = new Cocktail("whiskey sour",
-				"shake all ingredients with ice and strain into ice filled glass", "lemon slice and cherry on stick",
-				"old fasioned glass", recipeSteps);
+		Cocktail cocktail = new Cocktail("Whiskey Sour",
+				"Shake all ingredients with ice and strain into an ice filled glass.", "Lemon slice and cherry on a stick.",
+				"Old Fashioned Glass", recipeSteps, "https://s3.amazonaws.com/commonwealthcocktailbucket/Voice+003.mp3");
 		cocktails.add(cocktail);
 		recipeSteps = new ArrayList<RecipeStep>();
-		ingredient = new Ingredient("tequila");
+		ingredient = new Ingredient("tequila", null);
 		recipeStep = new RecipeStep(ingredient, 0, 1.5, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("triple sec");
+		ingredient = new Ingredient("triple sec", null);
 		recipeStep = new RecipeStep(ingredient, 1, .75, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lime juice");
+		ingredient = new Ingredient("lime juice", null);
 		recipeStep = new RecipeStep(ingredient, 2, .75, "ounce");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("agave syrup");
+		ingredient = new Ingredient("agave syrup", null);
 		recipeStep = new RecipeStep(ingredient, 3, 1, "spoonfull");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("salt");
+		ingredient = new Ingredient("salt", null);
 		recipeStep = new RecipeStep(ingredient, 4, .5, "pinch");
 		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lavender bitters");
+		ingredient = new Ingredient("lavender bitters", null);
 		recipeStep = new RecipeStep(ingredient, 5, 1, "dash");
 		recipeSteps.add(recipeStep);
-		cocktail = new Cocktail("margarita on the rocks",
-				"shake all ingredients with ice and strain into ice filled glass", "salt rim optional and lime wedge",
-				"old fasioned glass", recipeSteps);
+		cocktail = new Cocktail("Margarita on the rocks",
+				"Shake all ingredients with ice and strain into ice an filled glass.", "Salt rim and lime wedge.",
+				"Old Fashioned Glass.", recipeSteps, null);
 		cocktails.add(cocktail);
 	}
 
@@ -187,46 +189,49 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	 */
 	protected SpeechletResponse getCocktailRecipeResponse(Intent intent, Session session) {
 		String speechOutput = "";
-		
+		String cardOutput = "";
+		String cardTitle = "";
+
 		try {
 			ClassLoader classLoader = this.getClass().getClassLoader();
 			File file = new File(classLoader.getResource("speechAssets/reponsePhrases.stg").getFile());
-			
+
 			STGroup group = new STGroupFile(file.getCanonicalPath(), '$', '$');
-			ST st = group.getInstanceOf("recipe");
 
 			Slot nameSlot = intent.getSlot(SLOT_NAME);
 			String name = nameSlot.getValue().toLowerCase();
 			speechOutput = "We don't have a recipe for " + name;
-			
+
 			boolean found = false;
 			Iterator<Cocktail> cocktail_iter = cocktails.iterator();
 			while (cocktail_iter.hasNext() && !found) {
 				Cocktail cocktail = cocktail_iter.next();
-				if (cocktail.name.contains(name)) {
+				if (cocktail.name.toLowerCase().contains(name)) {
+					ST st = group.getInstanceOf("echoSpeechRecipe");
 					st.add("cocktail", cocktail);
 					speechOutput = st.render();
+					st = group.getInstanceOf("echoCardRecipe");
+					st.add("cocktail", cocktail);
+					cardOutput = st.render();
+					cardTitle = cocktail.name;
 					found = true;
 				}
 			}
-//			if (name.contains("whiskey sour")) {
-//				//st.add("cocktail", cocktail);
-//				//speechOutput = st.render();
-//				speechOutput = "to make a " + name
-//						+ "<break strength='strong' />  ingredients<break strength='strong' /> two ounces bourbon whiskey<break strength='weak' /> one ounce freshly squeezed lemon juice<break strength='weak' />  half an ounce simple syrup<break strength='weak' />  three dashes of aromatic bitters<break strength='strong' />  garnish<break strength='medium' /> lemon slice and cherry on stick<break strength='strong' />  shake all ingredients with ice and strain into ice-filled glass";
-//			} else if (name.contains("margarita on the rocks")) {
-//				speechOutput = " to make a " + name
-//						+ "<break strength='strong' />  ingredients<break strength='strong' /> <say-as interpret-as=\"fraction\">1+1/2</say-as> ounces tequila<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces triple sec<break strength='weak' /> <say-as interpret-as=\"fraction\">3/4</say-as> ounces freshly squeezed lime juice<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> spoonfull agave syrup<break strength='weak' /> <say-as interpret-as=\"fraction\">1/2</say-as> pinch salt<break strength='weak' /> <say-as interpret-as=\"fraction\">1</say-as> dash lavender bitters<break strength='strong' /> garnish<break strength='medium' /> salt rim optional and lime wedge<break strength='strong' /> shake all ingredients with ice and strain into ice-filled glass";
-//			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		StandardCard card = new StandardCard();
+		card.setText(cardOutput);
+		card.setTitle(cardTitle);
+
 		// Create the plain text output
 		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
 		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
 
-		return SpeechletResponse.newTellResponse(outputSpeech);
+		SpeechletResponse response = SpeechletResponse.newTellResponse(outputSpeech);
+		response.setCard(card);
+		return response;
 	}
 
 	/**
@@ -261,12 +266,12 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		Iterator<Cocktail> cocktail_iter = cocktails.iterator();
 		while (cocktail_iter.hasNext() && !found) {
 			Cocktail cocktail = cocktail_iter.next();
-			if (cocktail.name.contains(name)) {
+			if (cocktail.name.toLowerCase().contains(name)) {
 				Iterator<RecipeStep> recipeSteps_iter = cocktail.recipeSteps.iterator();
 				while (recipeSteps_iter.hasNext() && !found) {
 					RecipeStep recipeStep = recipeSteps_iter.next();
 					if (recipeStep.ordinal == ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX)))
-									.intValue()) {
+							.intValue()) {
 						speechOutput.append(recipeStep.ingredient.name);
 						int index = ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
 						index++;
@@ -290,8 +295,8 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			return SpeechletResponse.newTellResponse(output);
 		} else {
 			speechOutput.append(" Would you like to hear more?");
-			return newAskResponse(speechOutput.toString(), true,
-					"Would you like to hear more? Please say yes or no.", false);
+			return newAskResponse(speechOutput.toString(), true, "Would you like to hear more? Please say yes or no.",
+					false);
 		}
 	}
 

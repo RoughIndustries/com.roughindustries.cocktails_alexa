@@ -15,13 +15,22 @@ public class Cocktail {
     public String origin;
     public String source;
     public List<RecipeStep> recipeSteps;
+	public boolean use_sponsor_audio = false;
+	public String sponsor_audio_link = "";
 
-	public Cocktail(String name, String method, String garnish, String drinkware, List<RecipeStep> recipeSteps) {
+	public Cocktail(String name, String method, String garnish, String drinkware, List<RecipeStep> recipeSteps, String sponsor_audio_link) {
 		super();
 		this.name = name;
 		this.method = method;
 		this.garnish = garnish;
 		this.drinkware = drinkware;
 		this.recipeSteps = recipeSteps;
+		if(sponsor_audio_link != null){
+			this.use_sponsor_audio = true;
+			this.sponsor_audio_link = sponsor_audio_link;
+		} else {
+			this.use_sponsor_audio = false;
+			this.sponsor_audio_link = "";
+		}
 	}
 }
