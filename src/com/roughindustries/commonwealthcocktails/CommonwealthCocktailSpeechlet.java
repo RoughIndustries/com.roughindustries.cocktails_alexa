@@ -3,12 +3,17 @@ package com.roughindustries.commonwealthcocktails;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Vector;
 
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stringtemplate.v4.ST;
@@ -45,6 +50,9 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 
 	private static final String SLOT_NAME = "name";
 
+	final static String mybatisConfigFileName = "mybatis/mybatis-config.xml";
+
+	
 	/**
 	 * The key to find the current index from the session attributes.
 	 */
@@ -59,6 +67,11 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	 * The key to find the current cocktail from the session attributes.
 	 */
 	private static final String SESSION_CURRENT_COCKTAIL = "cocktail";
+	
+	/**
+	 * The key to find the current sql factory from the session attributes.
+	 */
+	private static final String SESSION_SQL_FACTORY = "cocktail";
 
 	private static final List<Cocktail> cocktails = new ArrayList<Cocktail>();
 
@@ -108,7 +121,14 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	@Override
 	public void onSessionStarted(final SessionStartedRequest request, final Session session) throws SpeechletException {
 		log.info("onSessionStarted requestId={}, sessionId={}", request.getRequestId(), session.getSessionId());
-		// any initialization logic goes here
+		try {
+			InputStream inputStream = Resources.getResourceAsStream(mybatisConfigFileName);
+			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+			session.setAttribute(SESSION_SQL_FACTORY, sqlSessionFactory);
+			inputStream.close();
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
 	}
 
 	@Override
@@ -191,7 +211,11 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		String speechOutput = "";
 		String cardOutput = "";
 		String cardTitle = "";
-
+		
+		SqlSessionFactory ssf = (SqlSessionFactory)session.getAttribute(SESSION_SQL_FACTORY);
+		SqlSession dbsession = ssf.openSession();
+		log.info("DB Session "+dbsession);
+		
 		try {
 			ClassLoader classLoader = this.getClass().getClassLoader();
 			File file = new File(classLoader.getResource("speechAssets/reponsePhrases.stg").getFile());

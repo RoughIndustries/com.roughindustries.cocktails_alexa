@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+	<properties resource="mybatis/mybatisGenProps.properties"></properties>
+	<classPathEntry
+		location="${MAVEN_HOME_PROP}/mysql/mysql-connector-java/5.1.38/mysql-connector-java-5.1.38.jar" />
+
+	<context id="context1">
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://roughindustriesmysqlcc.c2hmd6oyqsiy.us-east-1.rds.amazonaws.com:3306/commonwealth_cocktails" userId="roughindustries"
+			password="roughindustries1!" />
+		<javaModelGenerator targetPackage="com.roughindustries.commonwealthcocktails.mybatis.model"
+			targetProject="CommonwealthCocktails_Alexa" />
+		<sqlMapGenerator targetPackage="com.roughindustries.commonwealthcocktails.mybatis.sql"
+			targetProject="CommonwealthCocktails_Alexa" />
+		<javaClientGenerator targetPackage="com.roughindustries.commonwealthcocktails.mybatis.client"
+			targetProject="CommonwealthCocktails_Alexa" type="XMLMAPPER" />
+		<table schema="public" tableName="article">
+			<generatedKey column="idarticle" sqlStatement="JDBC" />
+		</table>
+		<table schema="public" tableName="producer"/>
+		<table schema="public" tableName="product"/>
+		<table schema="public" tableName="component"/>
+		<table schema="public" tableName="sponsorship"/>
+		<table schema="public" tableName="recipe"/>
+		<table schema="public" tableName="cocktail"/>
+		<table schema="public" tableName="categories"/>
+		<table schema="public" tableName="component2cocktail"/>
+		<table schema="public" tableName="component2product"/>
+	</context>
+</generatorConfiguration>
