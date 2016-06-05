@@ -1,6 +1,6 @@
 <!DOCTYPE configuration
-  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 	<environments default="development">
 		<environment id="development">
@@ -14,6 +14,8 @@
 		</environment>
 	</environments>
 	<mappers>
-		<!--<mapper resource="com/roughindustries/air/sql/AirportsMapper.xml" />-->
+		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/CocktailMapper.xml" />
+		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/RecipeMapper.xml" />
+		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/ComponentMapper.xml" />
 	</mappers>
 </configuration>

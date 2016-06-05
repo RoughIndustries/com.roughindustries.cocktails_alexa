@@ -2,6 +2,7 @@ package com.roughindustries.commonwealthcocktails;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,9 +38,16 @@ import com.amazon.speech.ui.Reprompt;
 import com.amazon.speech.ui.SimpleCard;
 import com.amazon.speech.ui.SsmlOutputSpeech;
 import com.amazon.speech.ui.StandardCard;
-import com.roughindustries.commonwealthcocktails.model.Cocktail;
-import com.roughindustries.commonwealthcocktails.model.Ingredient;
-import com.roughindustries.commonwealthcocktails.model.RecipeStep;
+import com.esotericsoftware.yamlbeans.YamlException;
+import com.esotericsoftware.yamlbeans.YamlReader;
+import com.roughindustries.commonwealthcocktails.model.ccCocktail;
+import com.roughindustries.commonwealthcocktails.model.ccComponent;
+import com.roughindustries.commonwealthcocktails.model.ccRecipe;
+import com.roughindustries.commonwealthcocktails.model.ccStyle;
+import com.roughindustries.commonwealthcocktails.mybatis.client.CocktailMapper;
+import com.roughindustries.commonwealthcocktails.mybatis.model.Cocktail;
+import com.roughindustries.commonwealthcocktails.mybatis.model.CocktailExample;
+import com.roughindustries.commonwealthcocktails.mybatis.model.CocktailWithBLOBs;
 
 /**
  * This sample shows how to create a simple speechlet for handling speechlet
@@ -51,8 +59,8 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	private static final String SLOT_NAME = "name";
 
 	final static String mybatisConfigFileName = "mybatis/mybatis-config.xml";
+	final static String yamlCocktailFileName = "data/cocktails.yml";
 
-	
 	/**
 	 * The key to find the current index from the session attributes.
 	 */
@@ -67,55 +75,33 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 	 * The key to find the current cocktail from the session attributes.
 	 */
 	private static final String SESSION_CURRENT_COCKTAIL = "cocktail";
-	
+
 	/**
 	 * The key to find the current sql factory from the session attributes.
 	 */
 	private static final String SESSION_SQL_FACTORY = "cocktail";
 
-	private static final List<Cocktail> cocktails = new ArrayList<Cocktail>();
+	private static final List<ccCocktail> cocktails = new ArrayList<ccCocktail>();
 
-	static {
-		List<RecipeStep> recipeSteps = new ArrayList<RecipeStep>();
-		Ingredient ingredient = new Ingredient("bourbon whiskey", "Jack Daniels Tennessee Whiskey");
-		RecipeStep recipeStep = new RecipeStep(ingredient, 0, 2, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lemon juice", null);
-		recipeStep = new RecipeStep(ingredient, 1, 1, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("simple syrup", null);
-		recipeStep = new RecipeStep(ingredient, 2, .5, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("aromatic bitters", null);
-		recipeStep = new RecipeStep(ingredient, 3, 3, "dash");
-		recipeSteps.add(recipeStep);
-		Cocktail cocktail = new Cocktail("Whiskey Sour",
-				"Shake all ingredients with ice and strain into an ice filled glass.", "Lemon slice and cherry on a stick.",
-				"Old Fashioned Glass", recipeSteps, "https://s3.amazonaws.com/commonwealthcocktailbucket/Voice+003.mp3");
-		cocktails.add(cocktail);
-		recipeSteps = new ArrayList<RecipeStep>();
-		ingredient = new Ingredient("tequila", null);
-		recipeStep = new RecipeStep(ingredient, 0, 1.5, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("triple sec", null);
-		recipeStep = new RecipeStep(ingredient, 1, .75, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lime juice", null);
-		recipeStep = new RecipeStep(ingredient, 2, .75, "ounce");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("agave syrup", null);
-		recipeStep = new RecipeStep(ingredient, 3, 1, "spoonfull");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("salt", null);
-		recipeStep = new RecipeStep(ingredient, 4, .5, "pinch");
-		recipeSteps.add(recipeStep);
-		ingredient = new Ingredient("lavender bitters", null);
-		recipeStep = new RecipeStep(ingredient, 5, 1, "dash");
-		recipeSteps.add(recipeStep);
-		cocktail = new Cocktail("Margarita on the rocks",
-				"Shake all ingredients with ice and strain into ice an filled glass.", "Salt rim and lime wedge.",
-				"Old Fashioned Glass.", recipeSteps, null);
-		cocktails.add(cocktail);
+	@SuppressWarnings("unchecked")
+	public ArrayList<ccCocktail> readYamlFromFile(String filename) {
+		Object object = null;
+		try {
+			File file = Resources.getResourceAsFile(filename);
+			YamlReader reader = new YamlReader(new FileReader(file));
+			reader.getConfig().setClassTag("cockatil", ccCocktail.class);
+			reader.getConfig().setClassTag("recipeStep", ccRecipe.class);
+			reader.getConfig().setClassTag("component", ccComponent.class);
+			reader.getConfig().setClassTag("style", ccStyle.class);
+			object = reader.read();
+			System.out.println(object);
+			reader.close();
+		} catch (YamlException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return (ArrayList<ccCocktail>) object;
 	}
 
 	@Override
@@ -126,7 +112,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 			session.setAttribute(SESSION_SQL_FACTORY, sqlSessionFactory);
 			inputStream.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
 	}
@@ -211,11 +197,11 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		String speechOutput = "";
 		String cardOutput = "";
 		String cardTitle = "";
-		
-		SqlSessionFactory ssf = (SqlSessionFactory)session.getAttribute(SESSION_SQL_FACTORY);
+
+		SqlSessionFactory ssf = (SqlSessionFactory) session.getAttribute(SESSION_SQL_FACTORY);
 		SqlSession dbsession = ssf.openSession();
-		log.info("DB Session "+dbsession);
-		
+		log.info("DB Session " + dbsession);
+
 		try {
 			ClassLoader classLoader = this.getClass().getClassLoader();
 			File file = new File(classLoader.getResource("speechAssets/reponsePhrases.stg").getFile());
@@ -227,34 +213,58 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			speechOutput = "We don't have a recipe for " + name;
 
 			boolean found = false;
-			Iterator<Cocktail> cocktail_iter = cocktails.iterator();
-			while (cocktail_iter.hasNext() && !found) {
-				Cocktail cocktail = cocktail_iter.next();
-				if (cocktail.name.toLowerCase().contains(name)) {
-					ST st = group.getInstanceOf("echoSpeechRecipe");
-					st.add("cocktail", cocktail);
-					speechOutput = st.render();
-					st = group.getInstanceOf("echoCardRecipe");
-					st.add("cocktail", cocktail);
-					cardOutput = st.render();
-					cardTitle = cocktail.name;
-					found = true;
-				}
+			// Iterator<ccCocktail> cocktail_iter = cocktails.iterator();
+			// while (cocktail_iter.hasNext() && !found) {
+			// ccCocktail cocktail = cocktail_iter.next();
+			// if (cocktail.getCocktailName().toLowerCase().contains(name)) {
+			// ST st = group.getInstanceOf("echoSpeechRecipe");
+			// st.add("cocktail", cocktail);
+			// speechOutput = st.render();
+			// st = group.getInstanceOf("echoCardRecipe");
+			// st.add("cocktail", cocktail);
+			// cardOutput = st.render();
+			// cardTitle = cocktail.getCocktailName();
+			// found = true;
+			// }
+			// }
+			CocktailsUtil cu = new CocktailsUtil();
+			List<ccCocktail> list = cu.getCocktails(dbsession, name);
+			if (list != null && list.size() == 1) {
+				CocktailWithBLOBs cocktail = list.get(0);
+				ST st = group.getInstanceOf("echoSpeechRecipe");
+				st.add("cocktail", cocktail);
+				speechOutput = st.render();
+				// st = group.getInstanceOf("echoCardRecipe");
+				// st.add("cocktail", cocktail);
+				// cardOutput = st.render();
+				// cardTitle = cocktail.getCocktailName();
+				found = true;
+			} else if (list != null && 
+					list.size() > 1){
+				//tell user we have a couple of options and they should pick
+				ST st = group.getInstanceOf("echoSpeechMultiRecipe");
+				st.add("cocktails", list);
+				speechOutput = st.render();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			if (dbsession != null) {
+				dbsession.close();
+				dbsession = null;
+			}
 		}
 
-		StandardCard card = new StandardCard();
-		card.setText(cardOutput);
-		card.setTitle(cardTitle);
+		// StandardCard card = new StandardCard();
+		// card.setText(cardOutput);
+		// card.setTitle(cardTitle);
 
 		// Create the plain text output
 		SsmlOutputSpeech outputSpeech = new SsmlOutputSpeech();
 		outputSpeech.setSsml("<speak>" + speechOutput + "</speak>");
 
 		SpeechletResponse response = SpeechletResponse.newTellResponse(outputSpeech);
-		response.setCard(card);
+		// response.setCard(card);
 		return response;
 	}
 
@@ -287,16 +297,16 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 		session.setAttribute(SESSION_CURRENT_CATEGORY, "CocktailIngredientIntent");
 
 		boolean found = false;
-		Iterator<Cocktail> cocktail_iter = cocktails.iterator();
+		Iterator<ccCocktail> cocktail_iter = cocktails.iterator();
 		while (cocktail_iter.hasNext() && !found) {
-			Cocktail cocktail = cocktail_iter.next();
-			if (cocktail.name.toLowerCase().contains(name)) {
-				Iterator<RecipeStep> recipeSteps_iter = cocktail.recipeSteps.iterator();
+			ccCocktail cocktail = cocktail_iter.next();
+			if (cocktail.getCocktailName().toLowerCase().contains(name)) {
+				Iterator<ccRecipe> recipeSteps_iter = cocktail.recipeSteps.iterator();
 				while (recipeSteps_iter.hasNext() && !found) {
-					RecipeStep recipeStep = recipeSteps_iter.next();
-					if (recipeStep.ordinal == ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX)))
+					ccRecipe recipeStep = recipeSteps_iter.next();
+					if (recipeStep.getRecipeOrdinal() == ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX)))
 							.intValue()) {
-						speechOutput.append(recipeStep.ingredient.name);
+						speechOutput.append(recipeStep.getIngredient().getComponentName());
 						int index = ((Integer) (session.getAttribute(SESSION_CURRENT_ING_INDEX))).intValue();
 						index++;
 						session.setAttribute(SESSION_CURRENT_ING_INDEX, new Integer(index));
