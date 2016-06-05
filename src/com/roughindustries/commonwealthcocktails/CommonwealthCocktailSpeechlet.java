@@ -227,8 +227,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			// found = true;
 			// }
 			// }
-			CocktailsUtil cu = new CocktailsUtil();
-			List<ccCocktail> list = cu.getCocktails(dbsession, name);
+			List<ccCocktail> list = ccCocktail.getCocktails(dbsession, name);
 			if (list != null && list.size() == 1) {
 				CocktailWithBLOBs cocktail = list.get(0);
 				ST st = group.getInstanceOf("echoSpeechRecipe");

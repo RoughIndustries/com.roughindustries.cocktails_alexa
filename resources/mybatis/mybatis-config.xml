@@ -17,5 +17,6 @@ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
 		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/CocktailMapper.xml" />
 		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/RecipeMapper.xml" />
 		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/ComponentMapper.xml" />
+		<mapper resource="com/roughindustries/commonwealthcocktails/mybatis/sql/Component2cocktailMapper.xml" />
 	</mappers>
 </configuration>
