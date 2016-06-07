@@ -47,7 +47,6 @@ import com.roughindustries.commonwealthcocktails.model.ccStyle;
 import com.roughindustries.commonwealthcocktails.mybatis.client.CocktailMapper;
 import com.roughindustries.commonwealthcocktails.mybatis.model.Cocktail;
 import com.roughindustries.commonwealthcocktails.mybatis.model.CocktailExample;
-import com.roughindustries.commonwealthcocktails.mybatis.model.CocktailWithBLOBs;
 
 /**
  * This sample shows how to create a simple speechlet for handling speechlet
@@ -229,7 +228,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			// }
 			List<ccCocktail> list = ccCocktail.getCocktails(dbsession, name);
 			if (list != null && list.size() == 1) {
-				CocktailWithBLOBs cocktail = list.get(0);
+				Cocktail cocktail = list.get(0);
 				ST st = group.getInstanceOf("echoSpeechRecipe");
 				st.add("cocktail", cocktail);
 				speechOutput = st.render();
