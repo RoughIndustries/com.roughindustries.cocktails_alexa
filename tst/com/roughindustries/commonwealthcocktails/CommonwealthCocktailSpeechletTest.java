@@ -35,14 +35,14 @@ public class CommonwealthCocktailSpeechletTest {
 			dbsession = sqlSessionFactory.openSession();
 			// cu.getCocktails(dbsession, "After 8");
 			// cu.getCocktails(dbsession, "After Eight");
-			// cu.getCocktails(dbsession, "Whiskey Sour");
-			//cocktailList = ccCocktail.getCocktails(dbsession, "margarita on the rocks");
+			cocktailList = ccCocktail.getCocktails(dbsession, "Whiskey Sour");
+			// cocktailList = ccCocktail.getCocktails(dbsession, "margarita on
+			// the rocks");
 			// cu.getCocktails(dbsession, "margarita");
 			// cu.getCocktails(dbsession, "Eighteen 97");
 			// cu.getCocktails(dbsession, "1897");
-			cocktailList = ccCocktail.getCocktails(dbsession, "Ricaço");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			// cocktailList = ccCocktail.getCocktails(dbsession, "Ricaço");
+		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			if (dbsession != null) {
@@ -58,6 +58,10 @@ public class CommonwealthCocktailSpeechletTest {
 			group = new STGroupFile(file.getCanonicalPath(), '$', '$');
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		for (ccCocktail cocktail : cocktailList) {
+			System.out.println(cocktail.getCocktailName());
 		}
 
 		ST st = group.getInstanceOf("echoSpeechRecipe");
