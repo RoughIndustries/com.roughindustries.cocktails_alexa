@@ -17,6 +17,7 @@ import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
 import com.roughindustries.commonwealthcocktails.model.ccCocktail;
+import com.roughindustries.commonwealthcocktails.model.ccCocktailCRUD;
 
 public class CommonwealthCocktailSpeechletTest {
 
@@ -35,7 +36,7 @@ public class CommonwealthCocktailSpeechletTest {
 			dbsession = sqlSessionFactory.openSession();
 			// cu.getCocktails(dbsession, "After 8");
 			// cu.getCocktails(dbsession, "After Eight");
-			cocktailList = ccCocktail.getCocktails(dbsession, "Whiskey", 0, 5);
+			cocktailList = ccCocktailCRUD.getCocktails(dbsession, "", 0, 25);
 			// cocktailList = ccCocktail.getCocktails(dbsession, "margarita on
 			// the rocks");
 			// cu.getCocktails(dbsession, "margarita");

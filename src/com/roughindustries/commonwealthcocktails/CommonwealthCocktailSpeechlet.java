@@ -41,6 +41,7 @@ import com.amazon.speech.ui.StandardCard;
 import com.esotericsoftware.yamlbeans.YamlException;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.roughindustries.commonwealthcocktails.model.ccCocktail;
+import com.roughindustries.commonwealthcocktails.model.ccCocktailCRUD;
 import com.roughindustries.commonwealthcocktails.model.ccComponent;
 import com.roughindustries.commonwealthcocktails.model.ccRecipe;
 import com.roughindustries.commonwealthcocktails.model.ccStyle;
@@ -226,7 +227,7 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 			// found = true;
 			// }
 			// }
-			List<ccCocktail> list = ccCocktail.getCocktails(dbsession, name, 0, 5);
+			List<ccCocktail> list = ccCocktailCRUD.getCocktails(dbsession, name, 0, 5);
 			if (list != null && list.size() == 1) {
 				Cocktail cocktail = list.get(0);
 				ST st = group.getInstanceOf("echoSpeechRecipe");
@@ -237,9 +238,8 @@ public class CommonwealthCocktailSpeechlet implements Speechlet {
 				// cardOutput = st.render();
 				// cardTitle = cocktail.getCocktailName();
 				found = true;
-			} else if (list != null && 
-					list.size() > 1){
-				//tell user we have a couple of options and they should pick
+			} else if (list != null && list.size() > 1) {
+				// tell user we have a couple of options and they should pick
 				ST st = group.getInstanceOf("echoSpeechMultiRecipe");
 				st.add("cocktails", list);
 				speechOutput = st.render();
