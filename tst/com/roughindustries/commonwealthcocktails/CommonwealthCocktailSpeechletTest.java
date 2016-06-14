@@ -36,7 +36,7 @@ public class CommonwealthCocktailSpeechletTest {
 			dbsession = sqlSessionFactory.openSession();
 			// cu.getCocktails(dbsession, "After 8");
 			// cu.getCocktails(dbsession, "After Eight");
-			cocktailList = ccCocktailCRUD.getCocktails(dbsession, "", 0, 25);
+			cocktailList = ccCocktailCRUD.getCocktailsBasic(dbsession, 0, 25);
 			// cocktailList = ccCocktail.getCocktails(dbsession, "margarita on
 			// the rocks");
 			// cu.getCocktails(dbsession, "margarita");
